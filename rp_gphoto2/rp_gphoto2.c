@@ -33,10 +33,17 @@ static void errordumper(GPLogLevel level, const char *domain, const char *str,
 my_struct init_camera() {
 	my_struct res;
 	int	retval;
-	res.context = sample_create_context();
 
-	gp_log_add_func(GP_LOG_ERROR, errordumper, NULL);
+   res.ok = 0;
+
+   res.context = sample_create_context();
+   if (res.context == NULL)
+      return res;
+
+   gp_log_add_func(GP_LOG_ERROR, errordumper, NULL);
 	gp_camera_new(&res.camera);
+   if (res.camera == NULL)
+      return res;
 
 	/* When I set GP_LOG_DEBUG instead of GP_LOG_ERROR above, I noticed that the
 	 * init function seems to traverse the entire filesystem on the camera.  This
@@ -47,10 +54,10 @@ my_struct init_camera() {
 	retval = gp_camera_init(res.camera, res.context);
 	if (retval != GP_OK) {
 		printf("  Retval of capture_to_file: %d\n", retval);
-      res.ok = 0;
+      return res;
 	}
+
    res.ok = 1;
-   
    return res;
 
 }
